@@ -125,3 +125,4 @@ STATICFILES_DIRS = (
     #('images',os.path.join(STATIC_ROOT,'images')),
     os.path.join(BASE_DIR,'cmdb/static'),
 )
+LOGIN_URL = '/login'
