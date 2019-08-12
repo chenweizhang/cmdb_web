@@ -1,11 +1,15 @@
+import json
+
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator,PageNotAnInteger,EmptyPage
+from django.db import transaction, connection
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import render
 
 # Create your views here.
 from cmdb import models
+from cmdb.models import hostinfo
 
 
 def validate_logon(request):
@@ -51,3 +55,31 @@ def server_info(request):
             server_info_obj = paginator.page(paginator.num_pages)
         return render(request,"member-list.html",{"server_info_list":server_info_obj})
 
+
+def del_server_info(request):
+
+    if request.method == "POST":
+        r = json.loads(request.body)
+        host_id = r.get("hostid")
+        if host_id is not None:
+
+            if isinstance(host_id,list):
+                host_id = ','.join(host_id)
+
+                try:
+                    with transaction.atomic():
+                         hostinfo.objects.extra(where=["id IN (%s)" % host_id]).delete()
+                    code = 'ok'
+                except Exception as e:
+                    print(e)
+                    code = 'err'
+            else:
+                try:
+                    hostinfo.objects.filter(id=host_id).delete()
+                    code = "ok"
+                except Exception as e:
+                    print(e)
+                    code = "err"
+        else:
+            code = "err"
+        return HttpResponse(code)

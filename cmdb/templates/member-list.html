@@ -9,13 +9,15 @@
         <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
         <link rel="stylesheet" href="{% static 'css/font.css' %}">
         <link rel="stylesheet" href="{% static 'css/xadmin.css' %}">
+        <script type="text/javascript" src="{% static "js/jquery.min.js" %}"></script>
+        <script type="text/javascript" src="{% static "js/csrf.js" %}"></script>
         <script src="{% static 'lib/layui/layui.js' %}" charset="utf-8"></script>
         <script type="text/javascript" src="{% static 'js/xadmin.js' %}"></script>
-
         <!--[if lt IE 9]>
           <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
           <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
         <![endif]-->
+
     </head>
     <body>
         <div class="x-nav">
@@ -35,7 +37,6 @@
 
                         <div class="layui-card-header">
                             <button class="layui-btn layui-btn-danger" onclick="delAll()"><i class="layui-icon"></i>批量删除</button>
-                            <button class="layui-btn" onclick="xadmin.open('添加用户','./member-add.html',600,400)"><i class="layui-icon"></i>添加</button>
                         </div>
                         <div class="layui-card-body layui-table-body layui-table-main">
                             <table class="layui-table layui-form">
@@ -59,7 +60,7 @@
                                 {% for server_info in server_info_list %}
                                   <tr>
                                     <td>
-                                      <input type="checkbox" name="id" value="1"   lay-skin="primary"> 
+                                      <input type="checkbox" name="id" value="{{ server_info.id }}"   lay-skin="primary">
                                     </td>
                                     <td>{{ server_info.hostname }}</td>
                                     <td>{{ server_info.ip }}</td>
@@ -77,7 +78,7 @@
                                       <a title="编辑"  onclick="xadmin.open('编辑','member-edit.html',600,400)" href="javascript:;">
                                         <i class="layui-icon">&#xe642;</i>
                                       </a>
-                                      <a title="删除" onclick="member_del(this,'要删除的id')" href="javascript:;">
+                                      <a title="删除" onclick="member_del(this,'{{ server_info.id }}')" href="javascript:;">
                                         <i class="layui-icon">&#xe640;</i>
                                       </a>
                                     </td>
@@ -170,11 +171,19 @@
       function member_del(obj,id){
           layer.confirm('确认要删除吗？',function(index){
               //发异步删除数据
-              $(obj).parents("tr").remove();
-              layer.msg('已删除!',{icon:1,time:1000});
+              r = {"hostid":id};
+              $.post("{% url "del_server_info" %}",JSON.stringify(r),function(data){
+
+                 if(data == "ok"){
+                     layer.msg('已删除!',{icon:1,time:1000});
+                     $(obj).parents("tr").remove();
+                 }else if(data == "err"){
+                     layer.msg('删除失败!',{icon:1,time:1000});
+                 }
+              });
+
           });
       }
-
 
 
       function delAll (argument) {
@@ -186,11 +195,19 @@
                ids.push($(this).val())
             }
         });
-  
-        layer.confirm('确认要删除吗？'+ids.toString(),function(index){
+        layer.confirm('确认要删除吗？',function(index){
             //捉到所有被选中的，发异步进行删除
-            layer.msg('删除成功', {icon: 1});
-            $(".layui-form-checked").not('.header').parents('tr').remove();
+            var rp = {"hostid":ids};
+            console.log(rp)
+            $.post("{% url "del_server_info" %}",JSON.stringify(rp),function(data){
+                if(data == 'ok'){
+                    layer.msg('删除成功', {icon: 1});
+                    $(".layui-form-checked").not('.header').parents('tr').remove();
+                }else if(data == 'err'){
+                    layer.msg('删除失败!', {icon: 1});
+                }
+            });
+
         });
       }
     </script>
