@@ -65,6 +65,10 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries': {
+                'my_customer_tags': 'cmdb.templatetags.custon_tage',
+
+            }
         },
     },
 ]

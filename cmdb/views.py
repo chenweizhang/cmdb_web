@@ -73,16 +73,17 @@ def query_server_info(request):
     if request.method == "GET":
         error_msg = ''
         hostname = request.GET.get("hostname")
-        print('111111[%s]' % hostname)
         page = request.GET.get("page")
 
         if hostname is not None:
             server_info_list = hostinfo.objects.filter(hostname__icontains=hostname)
-            server_info_obj = pages(server_info_list,page,8)
+
         else:
+            server_info_list = []
             error_msg = '请输入关键字'
             print(error_msg)
         # return HttpResponse('ok')
+        server_info_obj = pages(server_info_list, page, 8)
         return render(request,"member-list.html",{"server_info_list":server_info_obj,
                                             "error_msg":error_msg})
 def del_server_info(request):

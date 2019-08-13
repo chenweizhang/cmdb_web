@@ -1,3 +1,4 @@
+{% load custon_tage %}
 {% load staticfiles %}
 <!DOCTYPE html>
 <html class="x-admin-sm">
@@ -35,7 +36,7 @@
                 <div class="layui-col-md12">
                     <div class="layui-card">
                         <div class="layui-card-body ">
-                            <form class="layui-form layui-col-space5" method="get" action="/asset/query_server_info">
+                            <form class="layui-form layui-col-space5" method="get" action="{% url 'query_server_info' %}">
 
                                 <div class="layui-inline layui-show-xs-block">
                                     <input type="text" name="hostname"  placeholder="请输入主机名" autocomplete="off" class="layui-input">
@@ -93,8 +94,7 @@
                                       </a>
                                     </td>
                                   </tr>
-                                {% empty %}
-                                    <div> 没有符合条件的数据</div>
+                                {% empty %} <div> 没有符合条件的数据</div>
                                 {% endfor %}
 
                                 </tbody>
@@ -109,9 +109,9 @@
                                 {% for page_num in server_info_list.paginator.page_range %}
 
                                     {% if page_num == server_info_list.number %}
-                                        <span class="current" href="?page={{ page_num }}">{{ page_num }}</span>
+                                        <span class="current" href="{% guess_page request.get_full_path %}{{ page_num }}">{{ page_num }}</span>
                                     {% else %}
-                                        <a class="num" href="?page={{ page_num }}">{{ page_num }}</a>
+                                        <a class="num" href="{% guess_page request.get_full_path %}{{ page_num }}">{{ page_num }}</a>
                                     {% endif %}
                                 {% endfor %}
                                 {% if server_info_list.has_next %}
