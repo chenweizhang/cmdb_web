@@ -34,7 +34,17 @@
             <div class="layui-row layui-col-space15">
                 <div class="layui-col-md12">
                     <div class="layui-card">
+                        <div class="layui-card-body ">
+                            <form class="layui-form layui-col-space5" method="get" action="/asset/query_server_info">
 
+                                <div class="layui-inline layui-show-xs-block">
+                                    <input type="text" name="hostname"  placeholder="请输入主机名" autocomplete="off" class="layui-input">
+                                </div>
+                                <div class="layui-inline layui-show-xs-block">
+                                    <button class="layui-btn"  lay-submit="" lay-filter="sreach"><i class="layui-icon">&#xe615;</i></button>
+                                </div>
+                            </form>
+                        </div>
                         <div class="layui-card-header">
                             <button class="layui-btn layui-btn-danger" onclick="delAll()"><i class="layui-icon"></i>批量删除</button>
                         </div>
@@ -83,6 +93,8 @@
                                       </a>
                                     </td>
                                   </tr>
+                                {% empty %}
+                                    <div> 没有符合条件的数据</div>
                                 {% endfor %}
 
                                 </tbody>
