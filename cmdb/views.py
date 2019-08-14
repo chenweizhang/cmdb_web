@@ -55,27 +55,28 @@ def server_info(request):
     :return:
     '''
     if request.method == "GET":
-        server_info_list = models.hostinfo.objects.all()
-
-        # paginator = Paginator(server_info_list,8)       # 实例化结果集,每页八条数据
         page = request.GET.get("page")      # 接收网页中page值
+        hostname = request.GET.get("hostname")
+        if hostname:
+            server_info_list = hostinfo.objects.filter(hostname__icontains=hostname)
+        else:
+            server_info_list = models.hostinfo.objects.all()
+
         server_info_obj = pages(server_info_list,page,8)
-        # try:
-        #     # 根据page值返回相应结果
-        #     server_info_obj = paginator.page(page)
-        # except PageNotAnInteger:    # 不存在的页码，返回第一页
-        #     server_info_obj = paginator.page(1)
-        # except EmptyPage:
-        #     server_info_obj = paginator.page(paginator.num_pages)
         return render(request,"member-list.html",{"server_info_list":server_info_obj})
 def query_server_info(request):
 
+    '''
+    搜索，弃用，以合并至server_info
+    :param request:
+    :return:
+    '''
     if request.method == "GET":
         error_msg = ''
         hostname = request.GET.get("hostname")
         page = request.GET.get("page")
 
-        if hostname is not None:
+        if hostname:
             server_info_list = hostinfo.objects.filter(hostname__icontains=hostname)
 
         else:
@@ -86,6 +87,14 @@ def query_server_info(request):
         server_info_obj = pages(server_info_list, page, 8)
         return render(request,"member-list.html",{"server_info_list":server_info_obj,
                                             "error_msg":error_msg})
+
+def edit_server_info(request):
+    if request.method == 'GET':
+        return render(request,"member-edit.html")
+
+def add_server_info(request):
+    if request.method == 'GET':
+        return render(request,"member-add.html")
 def del_server_info(request):
 
     if request.method == "POST":

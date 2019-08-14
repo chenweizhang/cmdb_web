@@ -36,70 +36,29 @@
                 <div class="layui-col-md12">
                     <div class="layui-card">
                         <div class="layui-card-body ">
-                            <form class="layui-form layui-col-space5" method="get" action="{% url 'server_info' %}">
+                            <div class="layui-row">
+                            <div class="layui-col-md4">
+                            <form class="layui-form layui-col-space5" method="post" action="">
+
 
                                 <div class="layui-inline layui-show-xs-block">
                                     <input type="text" name="hostname"  placeholder="请输入主机名" autocomplete="off" class="layui-input">
+
                                 </div>
                                 <div class="layui-inline layui-show-xs-block">
                                     <button class="layui-btn"  lay-submit="" lay-filter="sreach"><i class="layui-icon">&#xe615;</i></button>
                                 </div>
                             </form>
+                            </div>
+                            <div class="layui-col-md8">
+                                阿萨德说得对
+                            </div>
+                            </div>
                         </div>
                         <div class="layui-card-header">
                             <button class="layui-btn layui-btn-danger" onclick="delAll()"><i class="layui-icon"></i>批量删除</button>
                         </div>
-                        <div class="layui-card-body layui-table-body layui-table-main">
-                            <table class="layui-table layui-form">
-                                <thead>
-                                  <tr>
-                                    <th>
-                                      <input type="checkbox" lay-filter="checkall" name="" lay-skin="primary">
-                                    </th>
-                                    <th>主机名</th>
-                                    <th>IP</th>
-                                    <th>内存</th>
-                                    <th>CPU型号</th>
-                                    <th>CPU线程数</th>
-                                    <th>操作系统</th>
-                                    <th>virtual</th>
-                                      <th>状态</th>
-                                      <th>操作</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                {% for server_info in server_info_list %}
-                                  <tr>
-                                    <td>
-                                      <input type="checkbox" name="id" value="{{ server_info.id }}"   lay-skin="primary">
-                                    </td>
-                                    <td>{{ server_info.hostname }}</td>
-                                    <td>{{ server_info.ip }}</td>
-                                    <td>{{ server_info.mem }}</td>
-                                    <td>{{ server_info.cpu }}</td>
-                                    <td>{{ server_info.cpus }}</td>
-                                      <td>{{ server_info.os }}</td>
-                                      <td>{{ server_info.virtual1 }}</td>
-                                    <td class="td-status">
-                                      <span class="layui-btn layui-btn-normal layui-btn-mini">{{ server_info.status }}</span></td>
-                                    <td class="td-manage">
-                                      <a onclick="member_stop(this,'10001')" href="javascript:;"  title="启用">
-                                        <i class="layui-icon">&#xe601;</i>
-                                      </a>
-                                      <a title="编辑"  onclick="xadmin.open('编辑','{% url 'edit' %}',600,400)" href="javascript:;">
-                                        <i class="layui-icon">&#xe642;</i>
-                                      </a>
-                                      <a title="删除" onclick="member_del(this,'{{ server_info.id }}')" href="javascript:;">
-                                        <i class="layui-icon">&#xe640;</i>
-                                      </a>
-                                    </td>
-                                  </tr>
-                                {% empty %} <div> 没有符合条件的数据</div>
-                                {% endfor %}
 
-                                </tbody>
-                            </table>
-                        </div>
                         <div class="layui-card-body ">
                             <div class="page">
                                 <div>
@@ -123,7 +82,7 @@
                     </div>
                 </div>
             </div>
-        </div> 
+        </div>
     </body>
     <script>
       layui.use(['laydate','form'], function(){
