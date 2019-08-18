@@ -113,10 +113,7 @@ def add_server_info(request):
                     if i in i_ip_list:  # 判断输入的ip是否在主机列表中
                         check_ip_inro = 1
                         break
-                elif ip == i:
-                    check_ip_inro = 1
-                    break
-            
+
 def del_server_info(request):
 
     if request.method == "POST":
