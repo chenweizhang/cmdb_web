@@ -3,8 +3,8 @@ import json
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator,PageNotAnInteger,EmptyPage
-from django.db import transaction, connection
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
+from django.db import transaction
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 
 # Create your views here.
@@ -93,8 +93,30 @@ def edit_server_info(request):
         return render(request,"member-edit.html")
 
 def add_server_info(request):
+
+    check_ip_inro = 0  # 检查主机是否存在，0不存在,1存在
     if request.method == 'GET':
         return render(request,"member-add.html")
+    if request.method == 'POST':
+
+        ip = request.POST.get('ip')  # 需要安装minion端的ip
+        username = request.POST.get('username') # 需要安装minion端的账户
+        password = request.POST.get('password') # 需要安装minion端的账户密码
+
+        if len(hostinfo.objects.filter(ip=ip)) > 0:
+            check_ip_inro = 1
+        else:
+            check_ip_list = hostinfo.objects.values_list('ip',flat=True)
+            for i in check_ip_list: # 将有多个ip的主机ip分开，自成一个列表供匹配检查主机是否已经存在
+                if ',' in i:
+                    i_ip_list = i.replace('[','').replace(']','').split(',')
+                    if i in i_ip_list:  # 判断输入的ip是否在主机列表中
+                        check_ip_inro = 1
+                        break
+                elif ip == i:
+                    check_ip_inro = 1
+                    break
+            
 def del_server_info(request):
 
     if request.method == "POST":
