@@ -1,4 +1,5 @@
 import json
+import subprocess
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -63,7 +64,7 @@ def server_info(request):
             server_info_list = models.hostinfo.objects.all()
 
         server_info_obj = pages(server_info_list,page,8)
-        return render(request,"member-list.html",{"server_info_list":server_info_obj})
+        return render(request,"member-list.html",{"server_info":server_info_obj})
 def query_server_info(request):
 
     '''
@@ -85,7 +86,7 @@ def query_server_info(request):
             print(error_msg)
         # return HttpResponse('ok')
         server_info_obj = pages(server_info_list, page, 8)
-        return render(request,"member-list.html",{"server_info_list":server_info_obj,
+        return render(request,"member-list.html",{"server_info":server_info_obj,
                                             "error_msg":error_msg})
 
 def edit_server_info(request):
@@ -103,17 +104,41 @@ def add_server_info(request):
         username = request.POST.get('username') # 需要安装minion端的账户
         password = request.POST.get('password') # 需要安装minion端的账户密码
 
-        if len(hostinfo.objects.filter(ip=ip)) > 0:
-            check_ip_inro = 1
-        else:
-            check_ip_list = hostinfo.objects.values_list('ip',flat=True)
-            for i in check_ip_list: # 将有多个ip的主机ip分开，自成一个列表供匹配检查主机是否已经存在
-                if ',' in i:
-                    i_ip_list = i.replace('[','').replace(']','').split(',')
-                    if i in i_ip_list:  # 判断输入的ip是否在主机列表中
-                        check_ip_inro = 1
-                        break
+        check_ip_list = hostinfo.objects.values_list('ip',flat=True)
+        for i in check_ip_list: # 将有多个ip的主机ip分开，自成一个列表供匹配检查主机是否已经存在
+            if ',' in i:
+                i_ip_list = i.replace('[','').replace(']','').split(',')
+                if i in i_ip_list:  # 判断输入的ip是否在主机列表中
+                    check_ip_inro = 1
+                    break
+        if ip not in check_ip_list and check_ip_inro == 0:
+            try:
+                roster = "echo '{ip}:' >> /etc/salt/roster &&" \
+                    "echo '  host:  {host}' >> /etc/salt/roster &&" \
+                    "echo '  user:  {username}' >> /etc/salt/roster &&" \
+                    "echo '  passwd:  {password}' >> /etc/salt/roster &&" \
+                    "echo '  port:  22' >> /etc/salt/roster &&" \
+                    "echo '  timeout:  10' >> /etc/salt/roster".format(ip=ip,
+                                                                       host=ip,
+                                                                       username=username,
+                                                                       password=password)
 
+                subprocess.run(roster, shell=True)  # 写入roster配置文件
+                # 获取hostname
+                resultgethostname = subprocess.run("salt-ssh -ir {ip} hostname".format(ip=ip),stdout=subprocess.PIPE)
+                resultgethostname = resultgethostname.stdout.decode('utf8').split()[-1]
+
+                subprocess.run("salt-ssh -ir {ip} 'echo {ip} {hostname} >> /etc/hosts'".format(ip=ip,hostname=resultgethostname),
+                               shell=True)
+                result = subprocess.run("salt-ssh -i {ip} state.sls minions.install".format(ip=ip),
+                               shell=True,stdout=subprocess.PIPE)
+                result = result.stdout.decode('utf8')
+            except:
+                result = "注意：无法连接至该主机，请检查ip账户密码是否错误！"
+        else:
+            result = "提示：该主机已存在！"
+
+        return render(request,"member-add.html",{"result":result})
 def del_server_info(request):
 
     if request.method == "POST":
