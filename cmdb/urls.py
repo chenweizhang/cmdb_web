@@ -4,8 +4,6 @@
 # Author: chenweizhang
 # Date  : 2019/8/9
 from django.urls import path
-from rest_framework.urlpatterns import format_suffix_patterns
-
 from cmdb.views import server_info, del_server_info, edit_server_info, add_server_info
 
 urlpatterns = [

@@ -41,7 +41,7 @@
                         <div class="layui-card-body addfrom">
                             <div class="layui-row layui-col-space30">
                             <div class="layui-col-md4">
-                            <form class="layui-form layui-col-space5" method="post" action="">
+                            <form class="layui-form layui-col-space5" method="post" action="">{% csrf_token %}
                                 <div class="layui-form-item">
                                     <label class="layui-form-label">IP:</label>
                                     <div class="layui-input-block">
@@ -72,7 +72,7 @@
                             <div class="layui-col-md8">
                                 <div style="width: 100%;background-color: #FFFFFF;height: 648px;float: left;margin: 0">
                                     <pre class="language-Makefile" style="width: 100%; height: 648px; padding: 10px; text-align: left; font-size: 15px;margin: 0">
-                                        <code class="language-Makefile">eeee</code>
+                                        <code class="language-Makefile">{{ result }}</code>
                                     </pre>
                                  </div>
                             </div>

@@ -114,18 +114,18 @@ def add_server_info(request):
         if ip not in check_ip_list and check_ip_inro == 0:
             try:
                 roster = "echo '{ip}:' >> /etc/salt/roster &&" \
-                    "echo '  host:  {host}' >> /etc/salt/roster &&" \
-                    "echo '  user:  {username}' >> /etc/salt/roster &&" \
-                    "echo '  passwd:  {password}' >> /etc/salt/roster &&" \
-                    "echo '  port:  22' >> /etc/salt/roster &&" \
-                    "echo '  timeout:  10' >> /etc/salt/roster".format(ip=ip,
+                    "echo '  host: {host}' >> /etc/salt/roster &&" \
+                    "echo '  user: {username}' >> /etc/salt/roster &&" \
+                    "echo '  passwd: {password}' >> /etc/salt/roster &&" \
+                    "echo '  port: 22' >> /etc/salt/roster &&" \
+                    "echo '  timeout: 10' >> /etc/salt/roster".format(ip=ip,
                                                                        host=ip,
                                                                        username=username,
                                                                        password=password)
 
                 subprocess.run(roster, shell=True)  # 写入roster配置文件
                 # 获取hostname
-                resultgethostname = subprocess.run("salt-ssh -ir {ip} hostname".format(ip=ip),stdout=subprocess.PIPE)
+                resultgethostname = subprocess.run("salt-ssh -ir {ip} hostname".format(ip=ip),shell=True,stdout=subprocess.PIPE)
                 resultgethostname = resultgethostname.stdout.decode('utf8').split()[-1]
 
                 subprocess.run("salt-ssh -ir {ip} 'echo {ip} {hostname} >> /etc/hosts'".format(ip=ip,hostname=resultgethostname),
@@ -133,11 +133,11 @@ def add_server_info(request):
                 result = subprocess.run("salt-ssh -i {ip} state.sls minions.install".format(ip=ip),
                                shell=True,stdout=subprocess.PIPE)
                 result = result.stdout.decode('utf8')
-            except:
-                result = "注意：无法连接至该主机，请检查ip账户密码是否错误！"
+            except Exception as e:
+                result = '''注意：无法连接至该主机，请检查ip账户密码是否错误!
+                         具体信息：{ex}'''.format(ex=e)
         else:
             result = "提示：该主机已存在！"
-
         return render(request,"member-add.html",{"result":result})
 def del_server_info(request):
 
