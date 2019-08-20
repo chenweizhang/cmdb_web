@@ -67,7 +67,7 @@ class SaltAPI(object):
         '''
             接受salt主机
         '''
-
+        
         params = {'client': 'wheel', 'fun': 'key.accept', 'match': node_name}
         obj = urllib.parse.urlencode(params).encode('utf-8')
         self.token_id()
