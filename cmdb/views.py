@@ -49,6 +49,7 @@ def pages(obj,page_value,value):
     except EmptyPage:
         reuslt_obj = paginator.page(paginator.num_pages)
     return reuslt_obj
+@login_required
 def server_info(request):
     '''
     资产主机详细信息
@@ -92,8 +93,13 @@ def query_server_info(request):
 def edit_server_info(request):
     if request.method == 'GET':
         return render(request,"member-edit.html")
-
+@login_required
 def add_server_info(request):
+    '''
+    添加资产后台逻辑
+    :param request:
+    :return:
+    '''
 
     check_ip_inro = 0  # 检查主机是否存在，0不存在,1存在
     if request.method == 'GET':

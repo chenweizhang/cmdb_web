@@ -63,7 +63,7 @@
 
                                 <div class="layui-form-item">
                                     <div class="layui-input-block">
-                                      <button class="layui-btn" lay-submit="" lay-filter="demo1">增加</button>
+                                      <button class="layui-btn" onclick="load()" lay-submit="" lay-filter="demo1">增加</button>
 
                                     </div>
                                 </div>
@@ -110,6 +110,21 @@
         var laydate = layui.laydate;
         var  form = layui.form;
 
+        //自定义验证规则
+        form.verify({
+            ip: [/^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])(\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])){3}$/, '非法IP地址'],
+            username: function(value) {
+                if (value.length < 1 ) {
+                    return '请输入账户';
+                }
+            },
+            password: function(value) {
+                if (value.length < 1 ) {
+                    return '请输入密码';
+                }
+            },
+
+        });
 
         // 监听全选
         form.on('checkbox(checkall)', function(data){
@@ -176,7 +191,14 @@
 
           });
       }
+      function load(){
+        layer.msg('部署中...', {
+        icon: 16,
+        shade: 0.01,
+        time: 0
+        });
 
+      }
 
       function delAll (argument) {
         var ids = [];
