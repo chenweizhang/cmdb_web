@@ -1,6 +1,6 @@
 import json
 import subprocess
-
+import salt.client
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator,PageNotAnInteger,EmptyPage
@@ -172,3 +172,7 @@ def del_server_info(request):
         else:
             code = "err"
         return HttpResponse(code)
+
+def get_server_info(request):
+    pass
+    client = salt.client.LocalClient()
