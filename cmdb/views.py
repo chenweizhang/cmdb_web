@@ -1,6 +1,5 @@
 import json
 import subprocess
-import salt.client
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator,PageNotAnInteger,EmptyPage
@@ -9,8 +8,9 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 
 # Create your views here.
-from cmdb import models
+
 from cmdb.models import hostinfo
+from salt.salt_api import SaltAPI
 
 
 def validate_logon(request):
@@ -49,6 +49,43 @@ def pages(obj,page_value,value):
     except EmptyPage:
         reuslt_obj = paginator.page(paginator.num_pages)
     return reuslt_obj
+
+def get_server_info():
+    '''
+    资产信息入库
+    '''
+    salt = SaltAPI(url='https://47.98.195.152:8001', user="saltapi", password="saltapi2019")
+    # minions, minions_pre = salt.list_all_key()
+    hostinfo_list = salt.access_to_asset_information()
+    hostname_db_list = hostinfo.objects.all().values_list('hostname',flat=True)  #一次性获取数据库所有主机名
+    hostinfo_list_to_insert = list()
+    flag = 0       # 1 需要入库资产信息,0 不需要入库
+
+    for min_info in hostinfo_list:
+        hostname = list(min_info.keys())[0]
+        if hostname in hostname_db_list:
+            print("主机已入库,不在重复采集资产信息")
+            continue
+        else:
+            flag = 1
+            host_info = min_info.get(hostname)
+            ip = host_info['fqdn_ip4']
+            mem = int(host_info['mem_total']) // 1024 + 1
+            cpu = host_info['cpu_model']
+            cpus = host_info['num_cpus']
+            os = host_info['oscodename']
+            virtual1 = host_info['virtual']
+            status = '在线'
+            hostinfo_list_to_insert.append(hostinfo(hostname=hostname, ip=ip, mem=mem, cpu=cpu, cpus=cpus, os=os,
+                                                    virtual1=virtual1, status=status))
+    if flag == 1:
+        try:
+            with transaction.atomic():
+                hostinfo.objects.bulk_create(hostinfo_list_to_insert)
+        except Exception as e:
+            print("数据库写入失败,错误信息：%s" % e)
+
+
 @login_required
 def server_info(request):
     '''
@@ -56,13 +93,14 @@ def server_info(request):
     :param request:
     :return:
     '''
+    get_server_info()
     if request.method == "GET":
         page = request.GET.get("page")      # 接收网页中page值
         hostname = request.GET.get("hostname")
         if hostname:
             server_info_list = hostinfo.objects.filter(hostname__icontains=hostname)
         else:
-            server_info_list = models.hostinfo.objects.all()
+            server_info_list = hostinfo.objects.all()
 
         server_info_obj = pages(server_info_list,page,8)
         return render(request,"member-list.html",{"server_info":server_info_obj})
@@ -173,6 +211,5 @@ def del_server_info(request):
             code = "err"
         return HttpResponse(code)
 
-def get_server_info(request):
-    pass
-    client = salt.client.LocalClient()
+
+

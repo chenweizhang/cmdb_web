@@ -3,10 +3,15 @@
 # File  : salt_api.py
 # Author: chenweizhang
 # Date  : 2019/8/20
+
 import json
 import ssl
 import urllib
 from urllib import request, parse
+
+from django.db import transaction
+
+from cmdb.models import hostinfo
 
 ssl._create_default_https_context = ssl._create_unverified_context
 class SaltAPI(object):
@@ -47,6 +52,7 @@ class SaltAPI(object):
         params = {'client':'wheel','fun':'key.list_all'}
         obj = parse.urlencode(params).encode('utf8')
         self.token_id()
+        print(obj)
         content = self.postRequest(obj)
         minions = content['return'][0]['data']['return']['minions']
         minions_pre = content['return'][0]['data']['return']['minions_pre']
@@ -189,13 +195,18 @@ class SaltAPI(object):
         ret = content['return'][0]
         return ret
 
-    def access_to_asset_information(self):
+    def access_to_asset_information(self,tgt=None):
         '''
         salt主机服务器信息
         '''
         params = None
         self.token_id()
-        content = self.postRequest(params,prefix='/minions')
+
+        if tgt:
+            prefix = '/minions/' + tgt
+        else:
+            prefix = '/minions'
+        content = self.postRequest(params,prefix=prefix)
         ret = content['return']
         return ret
 
@@ -206,4 +217,9 @@ if __name__ == "__main__":
     ret = salt.remote_execution_module('*','cmd.run','df -h')
     print(ret)
     ret = salt.access_to_asset_information()
-    print(ret)
+
+    if list(ret[0].keys())[0] == 'csb_env':
+        print(ret[0]['csb_env'])
+    # ret,b = salt.list_all_key()
+    # print(ret)
+    # print(b)
