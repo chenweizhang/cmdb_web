@@ -9,7 +9,7 @@ from django.shortcuts import render
 
 # Create your views here.
 
-from cmdb.models import hostinfo
+from cmdb.models import hostinfo, hostInstallog
 from salt.salt_api import SaltAPI
 
 
@@ -58,18 +58,26 @@ def get_server_info():
     # minions, minions_pre = salt.list_all_key()
     hostinfo_list = salt.access_to_asset_information()
     hostname_db_list = hostinfo.objects.all().values_list('hostname',flat=True)  #一次性获取数据库所有主机名
+    min_dict = hostinfo_list[0]
+    hostname_diff = list(set(hostname_db_list) ^ set(list(min_dict.keys())))
     hostinfo_list_to_insert = list()
     flag = 0       # 1 需要入库资产信息,0 不需要入库
 
-    for min_info in hostinfo_list:
-        hostname = list(min_info.keys())[0]
-        if hostname in hostname_db_list:
-            print("主机已入库,不在重复采集资产信息")
-            continue
-        else:
+    if len(hostname_diff) == 0:
+        print("主机均已入库,不在重复采集资产信息")
+    else:
+        for hostname in hostname_diff:
+            print(hostname)
+           # hostname_lsit = list(min_info.keys())
+           # print(hostname_lsit)
+           # hostname_diff = list(set(hostname_db_list)^set(hostname_lsit))
+           # print(hostname_diff)
+           # hostname = list(min_info.keys())[0]
             flag = 1
-            host_info = min_info.get(hostname)
+            host_info = min_dict.get(hostname)
             ip = host_info['fqdn_ip4']
+            if len(ip) == 1:
+                ip = host_info['fqdn_ip4'][0]
             mem = int(host_info['mem_total']) // 1024 + 1
             cpu = host_info['cpu_model']
             cpus = host_info['num_cpus']
@@ -139,7 +147,7 @@ def add_server_info(request):
     :return:
     '''
 
-    check_ip_inro = 0  # 检查主机是否存在，0不存在,1存在
+    check_ip_inro = 0  # 检查主机是否存在，0不存在,1存在,2存在但是失败
     if request.method == 'GET':
         return render(request,"member-add.html")
     if request.method == 'POST':
@@ -148,6 +156,13 @@ def add_server_info(request):
         username = request.POST.get('username') # 需要安装minion端的账户
         password = request.POST.get('password') # 需要安装minion端的账户密码
 
+        check_ip = hostInstallog.objects.filter(ip=ip).filter(results='ok')
+        if check_ip.exists():
+            check_ip_inro = 1
+        check_ip = hostInstallog.objects.filter(ip=ip).filter(results='err')
+        if check_ip.exists():
+            check_ip_inro = 2
+        '''
         check_ip_list = hostinfo.objects.values_list('ip',flat=True)
         for i in check_ip_list: # 将有多个ip的主机ip分开，自成一个列表供匹配检查主机是否已经存在
             if ',' in i:
@@ -155,7 +170,9 @@ def add_server_info(request):
                 if i in i_ip_list:  # 判断输入的ip是否在主机列表中
                     check_ip_inro = 1
                     break
-        if ip not in check_ip_list and check_ip_inro == 0:
+        '''
+        if check_ip_inro == 0 or check_ip_inro == 2:
+      #  if ip not in check_ip_list and check_ip_inro == 0:
             try:
                 roster = "echo '{ip}:' >> /etc/salt/roster &&" \
                     "echo '  host: {host}' >> /etc/salt/roster &&" \
@@ -169,19 +186,30 @@ def add_server_info(request):
 
                 subprocess.run(roster, shell=True)  # 写入roster配置文件
                 # 获取hostname
-                resultgethostname = subprocess.run("salt-ssh -ir {ip} hostname".format(ip=ip),shell=True,stdout=subprocess.PIPE)
+                resultgethostname = subprocess.run("salt-ssh -ir {ip} hostname".format(ip=ip),shell=True,
+                                                   stdout=subprocess.PIPE,check=True,timeout=5)
                 resultgethostname = resultgethostname.stdout.decode('utf8').split()[-1]
-
+                
                 subprocess.run("salt-ssh -ir {ip} 'echo {ip} {hostname} >> /etc/hosts'".format(ip=ip,hostname=resultgethostname),
                                shell=True)
                 result = subprocess.run("salt-ssh -i {ip} state.sls minions.install".format(ip=ip),
-                               shell=True,stdout=subprocess.PIPE)
+                               shell=True,stdout=subprocess.PIPE,check=True)
                 result = result.stdout.decode('utf8')
+                re = 'ok'
             except Exception as e:
+                subprocess.run("sed -i '/{ip}:/,+5d' /etc/salt/roster".format(ip=ip), shell=True)  # 回滚roster配置文件
                 result = '''注意：无法连接至该主机，请检查ip账户密码是否错误!
                          具体信息：{ex}'''.format(ex=e)
+                re = 'err'
+            if check_ip_inro == 2:
+                hl = hostInstallog.objects.get(ip=ip)
+                hl.results = re
+                hl.save()
+            else:
+                hostInstallog.objects.create(ip=ip, username=username, results=re)
         else:
             result = "提示：该主机已存在！"
+
         return render(request,"member-add.html",{"result":result})
 def del_server_info(request):
 

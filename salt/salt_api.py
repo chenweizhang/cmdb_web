@@ -9,10 +9,6 @@ import ssl
 import urllib
 from urllib import request, parse
 
-from django.db import transaction
-
-from cmdb.models import hostinfo
-
 ssl._create_default_https_context = ssl._create_unverified_context
 class SaltAPI(object):
     __token_id = ''
@@ -73,7 +69,7 @@ class SaltAPI(object):
         '''
             接受salt主机
         '''
-        
+
         params = {'client': 'wheel', 'fun': 'key.accept', 'match': node_name}
         obj = urllib.parse.urlencode(params).encode('utf-8')
         self.token_id()
@@ -214,12 +210,12 @@ if __name__ == "__main__":
 
     salt = SaltAPI(url='https://47.98.195.152:8001',user="saltapi",password="saltapi2019")
 
-    ret = salt.remote_execution_module('*','cmd.run','df -h')
-    print(ret)
+    # ret = salt.remote_execution_module('*','cmd.run','df -h')
+    # print(ret)
     ret = salt.access_to_asset_information()
-
-    if list(ret[0].keys())[0] == 'csb_env':
-        print(ret[0]['csb_env'])
+    print(ret)
+    # if list(ret[0].keys())[0] == 'csb_env':
+    #     print(ret[0]['csb_env'])
     # ret,b = salt.list_all_key()
     # print(ret)
     # print(b)

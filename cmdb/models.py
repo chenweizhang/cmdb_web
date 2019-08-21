@@ -51,3 +51,14 @@ class monitorMemory(models.Model):
     total = models.CharField(u'总内存',max_length=20)
     ratio = models.CharField(u'使用率',max_length=20)
     time = models.DateTimeField(u'时间',auto_now_add=True)
+
+class hostInstallog(models.Model):
+
+    ip = models.CharField(u'部署IP',max_length=50,primary_key=True)
+    username = models.CharField(u'登录账户',max_length=255)
+    results = models.CharField(u'结果',max_length=20)
+    create_date = models.DateField(u'部署时间',auto_now_add=True)
+    class Meta:
+        db_table = 't_host_install_log'
+
+
