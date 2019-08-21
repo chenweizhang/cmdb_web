@@ -1,5 +1,6 @@
 import json
 import subprocess
+
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator,PageNotAnInteger,EmptyPage
@@ -11,8 +12,8 @@ from django.shortcuts import render
 
 from cmdb.models import hostinfo, hostInstallog
 from salt.salt_api import SaltAPI
-
-
+import logging
+logger = logging.getLogger('django')
 def validate_logon(request):
     # 登录
     if request.method == "POST":
@@ -64,7 +65,7 @@ def get_server_info():
     flag = 0       # 1 需要入库资产信息,0 不需要入库
 
     if len(hostname_diff) == 0:
-        print("主机均已入库,不在重复采集资产信息")
+        logger.info("主机均已入库,不在重复采集资产信息")
     else:
         for hostname in hostname_diff:
             print(hostname)
@@ -201,12 +202,15 @@ def add_server_info(request):
                 result = '''注意：无法连接至该主机，请检查ip账户密码是否错误!
                          具体信息：{ex}'''.format(ex=e)
                 re = 'err'
-            if check_ip_inro == 2:
-                hl = hostInstallog.objects.get(ip=ip)
-                hl.results = re
-                hl.save()
-            else:
-                hostInstallog.objects.create(ip=ip, username=username, results=re)
+            try:
+                if check_ip_inro == 2:
+                    hl = hostInstallog.objects.get(ip=ip)
+                    hl.results = re
+                    hl.save()
+                else:
+                    hostInstallog.objects.create(ip=ip, username=username, results=re)
+            except:
+              print("注意：写入资产部署日志表失败")
         else:
             result = "提示：该主机已存在！"
 
@@ -238,6 +242,7 @@ def del_server_info(request):
         else:
             code = "err"
         return HttpResponse(code)
+
 
 
 

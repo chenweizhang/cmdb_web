@@ -5,9 +5,12 @@
 # Date  : 2019/8/20
 
 import json
+import logging
 import ssl
 import urllib
 from urllib import request, parse
+
+
 
 ssl._create_default_https_context = ssl._create_unverified_context
 class SaltAPI(object):
@@ -207,13 +210,18 @@ class SaltAPI(object):
         return ret
 
 if __name__ == "__main__":
+    log = logging.getLogger('django')
+    log.info('消息消息')
+    log.error('ddadad')
+    log.warning('dadad')
 
-    salt = SaltAPI(url='https://47.98.195.152:8001',user="saltapi",password="saltapi2019")
+    #salt = SaltAPI(url='https://47.98.195.152:8001',user="saltapi",password="saltapi2019")
 
     # ret = salt.remote_execution_module('*','cmd.run','df -h')
     # print(ret)
-    ret = salt.access_to_asset_information()
-    print(ret)
+    #ret = salt.access_to_asset_information()
+    #print(ret)
+    #log.info(ret)
     # if list(ret[0].keys())[0] == 'csb_env':
     #     print(ret[0]['csb_env'])
     # ret,b = salt.list_all_key()
