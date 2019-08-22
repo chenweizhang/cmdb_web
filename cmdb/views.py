@@ -75,17 +75,21 @@ def get_server_info():
            # hostname = list(min_info.keys())[0]
             flag = 1
             host_info = min_dict.get(hostname)
-            ip = host_info['fqdn_ip4']
-            if len(ip) == 1:
-                ip = host_info['fqdn_ip4'][0]
-            mem = int(host_info['mem_total']) // 1024 + 1
-            cpu = host_info['cpu_model']
-            cpus = host_info['num_cpus']
-            os = host_info['oscodename']
-            virtual1 = host_info['virtual']
-            status = '在线'
-            hostinfo_list_to_insert.append(hostinfo(hostname=hostname, ip=ip, mem=mem, cpu=cpu, cpus=cpus, os=os,
-                                                    virtual1=virtual1, status=status))
+            if host_info:
+                ip = host_info['fqdn_ip4']
+                if len(ip) == 1:
+                    ip = host_info['fqdn_ip4'][0]
+                mem = int(host_info['mem_total']) // 1024 + 1
+                cpu = host_info['cpu_model']
+                cpus = host_info['num_cpus']
+                os = host_info['oscodename']
+                virtual1 = host_info['virtual']
+                status = '在线'
+                hostinfo_list_to_insert.append(hostinfo(hostname=hostname, ip=ip, mem=mem, cpu=cpu, cpus=cpus, os=os,
+                                                        virtual1=virtual1, status=status))
+            else:
+                logger.error("客户端异常,master访问不到主机{0},请排查minion连接！".format(hostname))
+
 
     if flag == 1:
         try:
