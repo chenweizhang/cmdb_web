@@ -184,6 +184,8 @@ def add_server_info(request):
                     "echo '  user: {username}' >> /etc/salt/roster &&" \
                     "echo '  passwd: {password}' >> /etc/salt/roster &&" \
                     "echo '  port: 22' >> /etc/salt/roster &&" \
+                    "echo '  sudo: True' >> /etc/salt/roster &&" \
+                    "echo '  tty: True' >> /etc/salt/roster &&" \
                     "echo '  timeout: 10' >> /etc/salt/roster".format(ip=ip,
                                                                        host=ip,
                                                                        username=username,
@@ -204,11 +206,13 @@ def add_server_info(request):
                                shell=True,stdout=subprocess.PIPE,check=True)
                 result = result.stdout.decode('utf8')
                 re = 'ok'
-                logger.info("[{0}]主机minions部署成功".format(ip))
+                subprocess.run("sed -i '/{ip}:/,+7d' /etc/salt/roster".format(ip=ip), shell=True)  # 回滚roster配置文件
+                logger.info("[{0}]主机minions部署成功,清除roster记录".format(ip))
+
 
             except Exception as e:
                 logger.error("部署失败,发生异常----->{0}".format(e))
-                subprocess.run("sed -i '/{ip}:/,+5d' /etc/salt/roster".format(ip=ip), shell=True)  # 回滚roster配置文件
+                subprocess.run("sed -i '/{ip}:/,+7d' /etc/salt/roster".format(ip=ip), shell=True)  # 回滚roster配置文件
                 logger.error('回滚配置文件--->[{0}]---->/[etc/salt/roster]'.format(ip))
                 result = '''注意：无法连接至该主机，请检查ip账户密码是否错误!
                          具体信息：{ex}'''.format(ex=e)
