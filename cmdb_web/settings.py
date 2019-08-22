@@ -109,15 +109,15 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'zh-Hans'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
@@ -212,18 +212,18 @@ LOGGING = {
             'encoding': 'utf-8',
         },
        # 专门定义一个收集特定信息的日志
-        'collect': {
-            'level': 'INFO',
-            'class': 'logging.handlers.TimedRotatingFileHandler',  # 保存到文件，自动切
-            # 每天切割一次日志
-            'when': 'D',
-            'interval': 1,
-            'filename': os.path.join(BASE_LOG_DIR, "collect.log"),
-            #'maxBytes': 1024 * 1024 * 50,  # 日志大小 50M
-            'backupCount': 10,
-            'formatter': 'collect',
-            'encoding': "utf-8"
-        }
+       #  'collect': {
+       #      'level': 'INFO',
+       #      'class': 'logging.handlers.TimedRotatingFileHandler',  # 保存到文件，自动切
+       #      # 每天切割一次日志
+       #      'when': 'D',
+       #      'interval': 1,
+       #      'filename': os.path.join(BASE_LOG_DIR, "collect.log"),
+       #      #'maxBytes': 1024 * 1024 * 50,  # 日志大小 50M
+       #      'backupCount': 10,
+       #      'formatter': 'collect',
+       #      'encoding': "utf-8"
+       #  }
     },
     # 上面的处理器可以根据自己的需求来配置
     'loggers': {
@@ -234,10 +234,10 @@ LOGGING = {
             'propagate': True,  # 向不向更高级别的logger传递
         },
         # 名为 'collect'的logger还单独处理
-        'collect': {
-            'handlers': ['console', 'collect'],
-            'level': 'INFO',
-        }
+        # 'collect': {
+        #     'handlers': ['console', 'collect'],
+        #     'level': 'INFO',
+        #}
     },
 }
 
