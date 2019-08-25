@@ -263,20 +263,21 @@ def del_server_info(request):
                         hostinfo.objects.extra(where=["id IN (%s)" % host_id]).delete()
                     for node_name in hostname_list:
                         salt.delete_key(node_name)
-                        logger.info("删除认证KEY---->[%s]".format(node_name))
+                        logger.info("删除认证KEY---->[{0}]".format(node_name))
                     code = 'ok'
                 except Exception as e:
                     logger.error('批量删除失败--->[{0}]'.format(e))
                     code = 'err'
             else:
                 try:
-                    host_ip = r.get("hostip")
-                    host_name = r.get("hostname")
+                    host_info = hostinfo.objects.filter(id=host_id)
+                    host_ip = host_info[0].ip
+                    host_name = host_info[0].hostname
                     with transaction.atomic():
                         hostInstallog.objects.filter(ip=host_ip).delete()
-                        hostinfo.objects.filter(id=host_id).delete()
+                        host_info.delete()
                     salt.delete_key(host_name)
-                    logger.info("删除认证KEY---->[%s]".format(host_name))
+                    logger.info("删除认证KEY---->[{0}]".format(host_name))
                     code = "ok"
                 except Exception as e:
                     logger.error('单个删除失败--->[{0}]'.format(e))
