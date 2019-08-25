@@ -216,11 +216,12 @@ if __name__ == "__main__":
 
     #ret = salt.remote_execution_module('*','cmd.run','df -h')
     #print(ret)
-    ret = salt.access_to_asset_information()
-    print(ret[0])
+    #ret = salt.access_to_asset_information()
+    #print(ret[0])
     #log.info(ret)
     # if list(ret[0].keys())[0] == 'csb_env':
     #     print(ret[0]['csb_env'])
     # ret,b = salt.list_all_key()
     # print(ret)
     # print(b)
+    print(salt.delete_key("csb_env"))

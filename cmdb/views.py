@@ -14,6 +14,7 @@ from cmdb.models import hostinfo, hostInstallog
 from salt.salt_api import SaltAPI
 import logging
 logger = logging.getLogger('django')
+salt = SaltAPI(url='https://47.98.195.152:8001', user="saltapi", password="saltapi2019")
 def validate_logon(request):
     # 登录
     if request.method == "POST":
@@ -196,7 +197,7 @@ def add_server_info(request):
                                                                        password=password)
 
                 subprocess.run(roster, shell=True,check=True)  # 写入roster配置文件
-                logger.info('[{0}]--->写入/etc/salt/roster成功')
+                logger.info('[{0}]--->写入/etc/salt/roster成功'.format(ip))
                 # 获取hostname
                 resultgethostname = subprocess.run("salt-ssh -ir {ip} hostname".format(ip=ip),shell=True,
                                                    stdout=subprocess.PIPE,check=True,timeout=5)
@@ -240,23 +241,42 @@ def add_server_info(request):
 def del_server_info(request):
 
     if request.method == "POST":
+
         r = json.loads(request.body)
         host_id = r.get("hostid")
         if host_id is not None:
 
             if isinstance(host_id,list):
+                host_list = host_id
                 host_id = ','.join(host_id)
-
                 try:
+                    # 根据id,获取主机IP、主机名
+                    hostinfo_list = hostinfo.objects.filter(id__in=host_list).values_list('ip', 'hostname')
+                    hostname_list = list()
+                    ip_list = list()
+                    for i in hostinfo_list:
+                        hostname_list.append(i[1])
+                        ip_list.append(i[0])
+                    host_ip = ','.join(ip_list)
                     with transaction.atomic():
-                         hostinfo.objects.extra(where=["id IN (%s)" % host_id]).delete()
+                        hostInstallog.objects.extra(where=["ip IN (%s)" % host_ip]).delete()
+                        hostinfo.objects.extra(where=["id IN (%s)" % host_id]).delete()
+                    for node_name in hostname_list:
+                        salt.delete_key(node_name)
+                        logger.info("删除认证KEY---->[%s]".format(node_name))
                     code = 'ok'
                 except Exception as e:
                     logger.error('批量删除失败--->[{0}]'.format(e))
                     code = 'err'
             else:
                 try:
-                    hostinfo.objects.filter(id=host_id).delete()
+                    host_ip = r.get("hostip")
+                    host_name = r.get("hostname")
+                    with transaction.atomic():
+                        hostInstallog.objects.filter(ip=host_ip).delete()
+                        hostinfo.objects.filter(id=host_id).delete()
+                    salt.delete_key(host_name)
+                    logger.info("删除认证KEY---->[%s]".format(host_name))
                     code = "ok"
                 except Exception as e:
                     logger.error('单个删除失败--->[{0}]'.format(e))
