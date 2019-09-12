@@ -137,7 +137,7 @@ def query_server_info(request):
         else:
             server_info_list = []
             error_msg = '请输入关键字'
-            print(error_msg)
+            # print(error_msg)
         # return HttpResponse('ok')
         server_info_obj = pages(server_info_list, page, 8)
         return render(request,"member-list.html",{"server_info":server_info_obj,
@@ -287,5 +287,24 @@ def del_server_info(request):
         return HttpResponse(code)
 
 
+def approve(request):
 
+    if request.method == 'GET':
 
+        list_key = salt.list_all_key()[1]
+
+        return render(request,"member-approval.html",{"list_key":list_key})
+
+    if request.method == 'POST':
+        result = 'ok'
+        node_name = request.POST.get("node_name")
+        if node_name:
+            try:
+                salt.accept_key(node_name)
+            except Exception as e:
+                logger.error(e)
+                result = str(e)
+        else:
+            result = 'node_name参数不能为空'
+
+        return HttpResponse(result)

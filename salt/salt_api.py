@@ -77,6 +77,7 @@ class SaltAPI(object):
         obj = urllib.parse.urlencode(params).encode('utf-8')
         self.token_id()
         content = self.postRequest(obj)
+        print(content)
         ret = content['return'][0]['data']['success']
         return ret
 
@@ -217,7 +218,11 @@ if __name__ == "__main__":
     #ret = salt.remote_execution_module('*','cmd.run','df -h')
     #print(ret)
     ret = salt.access_to_asset_information()
-    print(ret)
+    #salt.delete_key("csb_env")
+    print(salt.list_all_key())
+    # print(salt.accept_key("csb_env"))
+    # print(salt.accept_key("123"))
+    #print(ret)
     #print(ret[0])
     #log.info(ret)
     # if list(ret[0].keys())[0] == 'csb_env':
