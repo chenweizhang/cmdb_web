@@ -259,8 +259,8 @@ def del_server_info(request):
                         ip_list.append(i[0])
                     host_ip = ','.join(ip_list)
                     with transaction.atomic():
-                        hostInstallog.objects.extra(where=["ip IN (%s)" % host_ip]).delete()
-                        hostinfo.objects.extra(where=["id IN (%s)" % host_id]).delete()
+                        hostInstallog.objects.extra(where=['ip IN (%s)' % host_ip]).delete()
+                        hostinfo.objects.extra(where=['id IN ("%s")' % host_id]).delete()
                     for node_name in hostname_list:
                         salt.delete_key(node_name)
                         logger.info("删除认证KEY---->[{0}]".format(node_name))
@@ -292,12 +292,16 @@ def approve(request):
     if request.method == 'GET':
 
         list_key = salt.list_all_key()[1]
-
+        page = request.GET.get("page")  # 接收网页中page值
+        list_key = pages(list_key,page,8)
+        print(salt.list_all_key())
         return render(request,"member-approval.html",{"list_key":list_key})
 
     if request.method == 'POST':
         result = 'ok'
-        node_name = request.POST.get("node_name")
+        r = json.loads(request.body)
+        node_name = r.get("nodename")
+
         if node_name:
             try:
                 salt.accept_key(node_name)

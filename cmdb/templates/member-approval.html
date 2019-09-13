@@ -1,3 +1,4 @@
+{% load custon_tage %}
 {% load staticfiles %}
 <!DOCTYPE html>
 <html class="x-admin-sm" xmlns="http://www.w3.org/1999/html">
@@ -11,6 +12,8 @@
         <link rel="stylesheet" href="{% static 'css/font.css' %}">
         <link rel="stylesheet" href="{% static 'css/xadmin.css' %}">
         <script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+        <script type="text/javascript" src="{% static "js/jquery.min.js" %}"></script>
+        <script type="text/javascript" src="{% static "js/csrf.js" %}"></script>
         <script src="{% static 'lib/layui/layui.js' %}" charset="utf-8"></script>
         <script type="text/javascript" src="{% static 'js/xadmin.js' %}"></script>
         <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
@@ -51,34 +54,43 @@
                                 {% for keys in list_key %}
                                     <tr cate-id='{{ forloop.counter }}' fid='0' >
                                       <td>{{ forloop.counter }}</td>
-                                      <td>
+                                      <td id="nodename">
                                         {{ keys }}
                                       </td>
                                       <td>
                                         <input type="checkbox" name="switch"
-                                               lay-text="通过|拒绝"  lay-filter="switchTest" lay-skin="switch">
+                                               lay-text="通过|拒绝"  lay-filter="approval" lay-skin="switch">
                                       </td>
                                     </tr>
 
                                 {% empty %}暂无需审批的服务器
                                 {% endfor %}
                               </tbody>
-                                {% endwith %}
+
                             </table>
                         </div>
 
                         <div class="layui-card-body ">
                             <div class="page">
                                 <div>
-                                    <a class="prev" href="">&lt;&lt;</a>
-                                    <a class="num" href="">1</a>
-                                    <span class="current">2</span>
-                                    <a class="num" href="">3</a>
-                                    <a class="num" href="">489</a>
-                                    <a class="next" href="">&gt;&gt;</a></div>
+                                {% if list_key.has_previous %}
+                                    <a class="prev"  href="?page={{ list_key.previous_page_number }}">&lt;&lt;</a>
+                                {% endif %}
+                                {% for page_num in list_key.paginator.page_range %}
+                                    {% if page_num == list_key.number %}
+                                        <span class="current" href="?page={{ page_num }}">{{ page_num }}</span>
+                                    {% else %}
+                                        <a class="num" href="?page={{ page_num }}">{{ page_num }}</a>
+                                    {% endif %}
+                                {% endfor %}
+                                {% if list_key.has_next %}
+                                  <a class="next" href="?page={{ list_key.next_page_number }}">&gt;&gt;</a>
+                                {% endif %}
+                                </div>
                             </div>
                         </div>
                     </form>
+                {% endwith %}
                     </div>
                 </div>
             </div>
@@ -87,11 +99,26 @@
           layui.use(['form'], function(){
             form = layui.form;
              //监听指定开关
-            form.on('switch(switchTest)', function(data){
-              layer.msg('开关checked：'+ (this.checked ? 'true' : 'false'), {
-                offset: '6px'
-              });
-              layer.tips('温馨提示：请注意开关状态的文字可以随意定义，而不仅仅是ON|OFF', data.othis)
+
+            form.on('switch(approval)', function(data){
+
+                var nodename = $("#nodename").text().replace(/\ +/g,"").replace(/[\r\n]/g,"");
+                var isresult = this.checked ? 'true' : 'false';
+                if(isresult == "true"){
+                    var r = {"nodename":nodename};
+                    console.log(r)
+
+                    $.post("{% url "approve" %}",JSON.stringify(r),function(data){
+
+                    if(data == "ok"){
+                        setTimeout('window.location.reload()',1000);
+                    }else{
+                        layer.msg('服务器异常!',{icon:1,time:1000});
+                    }
+                    });
+                }
+
+
           });
           });
 

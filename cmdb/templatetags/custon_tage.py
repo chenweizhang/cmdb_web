@@ -23,3 +23,19 @@ def guess_page(url):
     # else:
         page_ele = '''?page='''
     return format_html(page_ele)
+
+@register.simple_tag
+def approval_page(current_page,loop_num):
+    offset =abs(current_page-loop_num)
+
+    if offset < 4:
+        if current_page == loop_num:
+            page_ele = '''<li class="active"><a href="?page=%s">%s</a></li>''' % (loop_num,loop_num)
+
+        else:
+            page_ele = '''<li class=""><a href="?page=%s">%s</a></li>'''%(loop_num,loop_num)
+
+        return format_html(page_ele)
+
+    else:
+        return ''
