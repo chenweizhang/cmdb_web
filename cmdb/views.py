@@ -290,7 +290,7 @@ def del_server_info(request):
 def approve(request):
 
     if request.method == 'GET':
-        '11'
+      
         list_key = salt.list_all_key()[1]
         page = request.GET.get("page")  # 接收网页中page值
         list_key = pages(list_key,page,8)
