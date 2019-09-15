@@ -288,10 +288,14 @@ def del_server_info(request):
 
 
 def approve(request):
-
+    '''
+    资产审批
+    :param request:
+    :return:
+    '''
     if request.method == 'GET':
-      
-        list_key = salt.list_all_key()[1]
+
+        list_key = salt.list_all_key()[1]     #调用salt-api
         page = request.GET.get("page")  # 接收网页中page值
         list_key = pages(list_key,page,8)
         print(salt.list_all_key())
