@@ -336,7 +336,7 @@ class Monitor_Protocol(basic.LineReceiver):
         for i in range(1,math.ceil(len(list)/300)+1):
 
             tmp = list[0:300]
-            list = list[300*i::]
+            list = list[300::]
             self.sendLine(tmp)
 
 
