@@ -16,9 +16,8 @@ import subprocess
 import psutil
 from twisted.protocols import basic
 from twisted.internet import protocol, defer, task
-import Get_basic_info_2 as Huoqu
-import guardian as shouhu
-import time
+
+
 from twisted.application import service, internet
 
 class InfoGather(object):
@@ -330,20 +329,20 @@ class Monitor_Protocol(basic.LineReceiver):
         d.callback(result)
         return d
 
-    def xunhuan(self, list):
+    def hand_data(self, data):
         # 定义循环发送函数
-
-        for i in range(1,math.ceil(len(list)/300)+1):
-
-            tmp = list[0:300]
-            list = list[300::]
-            self.sendLine(tmp)
-
+        data+= "\r\n"
+        # for i in range(1,math.ceil(len(list)/300)+1):
+        #
+        #     tmp = list[0:300]
+        #     list = list[300::]
+        #     self.sendLine(tmp)
+        self.sendLine(data)
 
 
     def fasong(self):
         # 定义程序运行顺序，取得信息后用callback交给发送函数发送
-        self.huoqu_shuju().addCallback(self.xunhuan)
+        self.huoqu_shuju().addCallback(self.hand_data)
 
     def loop(self):
         # 使用twist内置的循环函数定义几秒监控数据传送到服务端
@@ -352,8 +351,7 @@ class Monitor_Protocol(basic.LineReceiver):
 
     def connectionMade(self):
         # 覆盖协议的connectmade函数，定义于服务端的连接建立后开始循环
-        print
-        'Connected!......ok!'
+        print('Connected!......ok!')
         self.loop()
 
     def lineReceived(self, line):
@@ -394,5 +392,5 @@ factory = Moinitor_client_factory(client_service)  # 定义服务工厂化
 tcp_service = internet.TCPClient(host, port, factory)  # 定义tcp连接的服务
 tcp_service.setServiceParent(top_service)  # 把tcp服务丢到服务容器中去
 
-application = service.Application('Fish_Service')  # 定义应用名字
+application = service.Application('Moinitor_Client_Service')  # 定义应用名字
 top_service.setServiceParent(application)  # 把服务容器丢到应用中去

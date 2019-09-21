@@ -62,3 +62,66 @@ class hostInstallog(models.Model):
         db_table = 't_host_install_log'
 
 
+class ac_base(models.Model):
+    hostname = models.CharField(u'主机名',max_length=255)
+    ip = models.CharField(u'ip地址',max_length=100)
+    capturetime = models.DateTimeField('u当前时间')
+    cpu = models.TextField()
+    men = models.CharField(u'内存',max_length=100)
+    swap = models.CharField(max_length=20)
+    osname = models.TextField(u'系统版本信息')
+    kernel = models.CharField(u'内核版本信息',max_length=255)
+    uptime = models.CharField(u'运行时间',max_length=255)
+
+    class Meta:
+        db_table = 'ac_base'
+
+
+class ac_cpu(models.Model):
+    hostname = models.CharField(u'主机名', max_length=255)
+    ip = models.CharField(u'ip地址', max_length=100)
+    capturetime = models.DateTimeField('u当前时间')
+    user_cpu = models.FloatField('CPU处在用户模式下的时间百分比')
+    nice_cpu = models.FloatField('CPU处在带NICE值的用户模式下的时间百分比')
+    system_cpu = models.FloatField('CPU处在系统模式下的时间百分比')
+    iowait_cpu = models.FloatField('CPU等待输入输出完成时间的百分比')
+    steal_cpu = models.FloatField('管理程序维护另一个虚拟处理器时，虚拟CPU的无意识等待时间百分比')
+    idle_cpu = models.FloatField('CPU空闲时间百分比')
+    usage_cpu = models.FloatField('CPU工作时间百分比')
+    load_avg = models.FloatField('系统负载')
+    class Meta:
+        db_table = 'ac_cpu'
+
+class ac_mem(models.Model):
+    hostname = models.CharField(u'主机名', max_length=255)
+    ip = models.CharField(u'ip地址', max_length=100)
+    capturetime = models.DateTimeField('u当前时间')
+    mem_total = models.IntegerField('内存总数')
+    mem_used = models.IntegerField('已使用内存')
+    mem_free = models.IntegerField('剩余内存')
+    swap_total = models.IntegerField()
+    swap_used = models.IntegerField()
+    swap_free = models.IntegerField()
+    mem_percent = models.FloatField('使用率')
+    class Meta:
+        db_table = 'ac_mem'
+
+class ac_disk(models.Model):
+    hostname = models.CharField(u'主机名', max_length=255)
+    ip = models.CharField(u'ip地址', max_length=100)
+    capturetime = models.DateTimeField('u当前时间')
+    disk = models.TextField('磁盘使用情况')
+    disk_io = models.TextField('磁盘IO')
+    class Meta:
+        db_table = 'ac_disk'
+
+class ac_net(models.Model):
+    hostname = models.CharField(u'主机名', max_length=255)
+    ip = models.CharField(u'ip地址', max_length=100)
+    capturetime = models.DateTimeField('u当前时间')
+    interface = models.TextField('网卡信息')
+    traffic_in = models.IntegerField('接收')
+    traffic_out = models.IntegerField('发送')
+    sockets = models.TextField('sockets连接信息')
+    class Meta:
+        db_table = 'ac_net'
