@@ -6,20 +6,18 @@
 import datetime
 import inspect
 import json
-import math
 import multiprocessing
 import os
 import platform
 import socket
 import subprocess
-
 import psutil
 from twisted.protocols import basic
 from twisted.internet import protocol, defer, task
-
-
 from twisted.application import service, internet
-
+from twisted.python import log,logfile
+f = logfile.DailyLogFile('agent.log', 'var/log/monitorAgent')
+log.startLogging(f)
 class InfoGather(object):
 
     def __init__(self):
@@ -75,7 +73,7 @@ class InfoGather(object):
 
             data = {'osname':osname,'kernel':uname[2],'hostname':uname[1]}
         except Exception as f:
-            print(f)
+            log.err(f)
             data = str(f)
         return data
     def get_uptime(self):
@@ -89,7 +87,7 @@ class InfoGather(object):
                 uptime_time = str(datetime.timedelta(seconds=uptime_seconds))
                 date = uptime_time.split('.',1)[0]
         except Exception as f:
-            print(f)
+            log.err(f)
             date = f
         return date
     def get_load(self):
@@ -100,7 +98,7 @@ class InfoGather(object):
         try:
             data = os.getloadavg()[0]
         except Exception as err:
-            print(err)
+            log.err(err)
             data = err
         return data
 
@@ -118,7 +116,7 @@ class InfoGather(object):
 
             date = "{CPUS} X {CPU_TYPE}".format(CPUS=cpus,CPU_TYPE=date)
         except Exception as err:
-            print(err)
+            log.err(err)
             date = str(err)
         return date
 
@@ -154,7 +152,7 @@ class InfoGather(object):
             data = cpu_usage_date
 
         except Exception as err:
-            print(err)
+            log.err(err)
             data = str(err)
 
         return data
@@ -208,7 +206,7 @@ class InfoGather(object):
                 'mem_percent':mem_percent,
             }
         except Exception as f:
-            print(f)
+            log.err(f)
             date = str(f)
 
         return  date
@@ -224,7 +222,7 @@ class InfoGather(object):
             date = [line.strip().split() for line in date]
 
         except Exception as err:
-            print(err)
+            log.err(err)
             date = str(err)
 
         return date
@@ -251,7 +249,7 @@ class InfoGather(object):
             date = disk_io_date
 
         except Exception as err:
-            print(err)
+            log.err(err)
             date = err
 
         return date
@@ -277,7 +275,7 @@ class InfoGather(object):
                 date.append(flag)
 
         except Exception as err:
-            print(err)
+            log.err(err)
             date = str(err)
 
         return date
@@ -298,7 +296,7 @@ class InfoGather(object):
             date = [ i.split(None,4) for i in result]
 
         except Exception as err:
-            print(err)
+            log.err(err)
             date = str(err)
         return date
 
@@ -324,6 +322,7 @@ class Monitor_Protocol(basic.LineReceiver):
     def huoqu_shuju():
 
         result = InfoGather().run_all_get_fun()
+        log.msg('资产信息采集成功')
         d = defer.Deferred()
         # 使用defered返回结果
         d.callback(result)
@@ -351,7 +350,7 @@ class Monitor_Protocol(basic.LineReceiver):
 
     def connectionMade(self):
         # 覆盖协议的connectmade函数，定义于服务端的连接建立后开始循环
-        print('Connected!......ok!')
+        log.msg('Connected!......ok!')
         self.loop()
 
     def lineReceived(self, line):
